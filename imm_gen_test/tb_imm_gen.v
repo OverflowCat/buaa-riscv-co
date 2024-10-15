@@ -1,3 +1,5 @@
+`include "imm_gen.v"
+
 `timescale 1ns/1ns
 
 module tb_imm_gen ();
@@ -121,6 +123,8 @@ initial begin
     $display(">>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<");  
     end  
         #100
+    $dumpfile("tb_imm_gen.vcd");
+    $dumpvars;
     $finish();
 end
 

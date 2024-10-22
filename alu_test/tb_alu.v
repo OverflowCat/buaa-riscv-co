@@ -1,3 +1,5 @@
+`include "alu.v"
+
 `timescale 1ns/1ns
 
 module tb_alu();
@@ -105,8 +107,10 @@ initial begin
     $display(" / ____/         / ___ |      ___/ /           ___/ /  ");    
     $display("/_/             /_/  |_|     /____/           /____/   ");
     $display(">>>>>>>>>>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<<<<<<<<<<<<<<");
-    end  
+    end
         #100
+    $dumpfile("tb_alu.vcd");
+    $dumpvars;
     $finish();
 end
 

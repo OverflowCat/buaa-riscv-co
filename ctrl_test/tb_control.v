@@ -1,3 +1,5 @@
+`include "control.v"
+
 `timescale 1ns/1ns
 
 module controller_tb();
@@ -158,13 +160,15 @@ initial begin
     else begin
     $display("--------------------------PASS-----------------------------");
     $display("    ____     ___    _____   _____ "); 
-    $display("   / __ \   /   |  / ___/  / ___/ ");    
-    $display("  / /_/ /  / /| |  \__ \   \__ \  ");    
+    $display("   / __ \\   /   |  / ___/  / ___/ ");    
+    $display("  / /_/ /  / /| |  \\__ \\   \\__ \\  ");    
     $display(" / ____/  / ___ | ___/ /  ___/ /  ");    
     $display("/_/      /_/  |_|/____/  /____/   ");   
     $display(">>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<");    
     end  
         #100
+    $dumpfile("control_tb.vcd");
+    $dumpvars();
     $finish();
 end
 

@@ -17,8 +17,9 @@ module regfile (
   // 包含两个读端口(A1/RD1 和 A2/RD2)和一个写端口(A3/WD3)
   // 其中 A1、A2 为 5bit 的寄存器地址，RD1、RD2 为 32bit 的寄存器数据
 
-  assign RD1 = regfile[A1];
-  assign RD2 = regfile[A2];
+  // 在 RSIC-V 处理器寄存器堆的 32 个寄存器中，0 号寄存器中存储的数据应该恒为 0
+  assign RD1 = (A1 == 5'h0) ? 32'h0 : regfile[A1];
+  assign RD2 = (A2 == 5'h0) ? 32'h0 : regfile[A2];
 
   // 在写使能信号 WE 为 1 时，WD3(32bit) 的数据将在时钟上升沿写入 A3(5bit)对应的寄存器
   always @(posedge clk) begin

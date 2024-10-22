@@ -1,3 +1,5 @@
+`include "regfile.v"
+
 `timescale 1ns/1ns
 
 module tb_regfile();
@@ -127,6 +129,8 @@ initial begin
     $display("/_/       /_/  |_|/___/   /_____/");
     end  
     #200
+    $dumpfile("tb_regfile.vcd");
+    $dumpvars;
     $finish();
 end
 

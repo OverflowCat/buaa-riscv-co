@@ -1,16 +1,7 @@
+`include "data_ram.v"
 `timescale 1ns/1ns
 
-
-
-
-
-
 module tb_data_ram();
-
-
-
-
-
 
 reg clk;
 reg rst_n;
@@ -57,15 +48,16 @@ initial begin
     for(i=0;i<1024;i=i+64)begin
         A = i*4;
         #1
-        if((RD != i) | $isunknown(RD))begin
+        // if((RD != i) | $isunknown(RD))begin
+        if (RD != i) begin
             error_flag = 1'b1;
             $display("Error : Read DATA-RAM Addr %x is %x,should be %x!",A,RD,std_rf[i]);
         end
     end
     if((!error_flag))begin
     $display("    ____     ___    _____   _____ "); 
-    $display("   / __ \   /   |  / ___/  / ___/ ");    
-    $display("  / /_/ /  / /| |  \__ \   \__ \  ");    
+    $display("   / __ \\   /   |  / ___/  / ___/ ");    
+    $display("  / /_/ /  / /| |  \\__ \\   \\__ \\  ");    
     $display(" / ____/  / ___ | ___/ /  ___/ /  ");    
     $display("/_/      /_/  |_|/____/  /____/   ");   
     $display(">>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<");    
@@ -79,6 +71,8 @@ initial begin
     $display(">>>>>>>>>>>>>>> FAIL <<<<<<<<<<<<<"); 
     end  
     #200
+    $dumpfile("data_ram.vcd");
+    $dumpvars;
     $finish();    
 end
 

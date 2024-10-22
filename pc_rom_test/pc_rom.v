@@ -10,6 +10,6 @@ initial begin
     $readmemb("code.dat", mem);
 end
 
-assign RD = mem[A];
+assign RD = mem[A >> 2];
 
 endmodule

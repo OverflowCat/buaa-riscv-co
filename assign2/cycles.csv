@@ -1,0 +1,11 @@
+1,2,3,4,5,6,7,8,9,10,11,12,13,14,,,,
+IF,ID,EX,MEM,WB,,,,,,,,,,add,x15,x12,x11
+,IF,ID,EX,MEM,WB,,,,,,,,,nop,,,
+,,IF,ID,EX,MEM,WB,,,,,,,,nop,,,
+,,,IF,ID,EX,MEM,WB,,,,,,,lw,x13,4(x15),
+,,,,IF,ID,EX,MEM,WB,,,,,,lw,x12,0(x2),
+,,,,,IF,ID,EX,MEM,WB,,,,,nop,,,
+,,,,,,IF,ID,EX,MEM,WB,,,,or,x13,x15,x13
+,,,,,,,IF,ID,EX,MEM,WB,,,nop,,,
+,,,,,,,,IF,ID,EX,MEM,WB,,nop,,,
+,,,,,,,,,IF,ID,EX,MEM,WB,sw,x13,0(x15),

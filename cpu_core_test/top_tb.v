@@ -1,3 +1,4 @@
+`include "core_top.v"
 `timescale 1ns/1ns
 
 module top_tb();
@@ -9,7 +10,6 @@ parameter clk_period = 10;
 always#(clk_period/2) clk = !clk;
 
 core_top  u_top(
-             
     .clk(clk),
     .rst_n(rst_n)
 );
@@ -29,10 +29,8 @@ initial begin
     $finish();
 end
 
-always@(posedge clk)begin
-     $display("PC=%x,instr=%x",u_top.u_data_path.pc,u_top.instr);
+always @(posedge clk) begin
+    $display("PC=%x,instr=%x", u_top.u_data_path.pc, u_top.instr);
 end
 
 endmodule
-
-

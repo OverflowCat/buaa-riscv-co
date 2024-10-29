@@ -1,0 +1,28 @@
+PC=xxxxxxxx,instr=xxxxxxxx
+PC=00000000,instr=00002283
+============SIM Start =============
+PC=00000000,instr=00002283
+PC=00000004,instr=00528333
+PC=00000008,instr=0062e533
+PC=0000000c,instr=00550533
+PC=00000010,instr=00630633
+PC=00000014,instr=0062f5b3
+PC=00000018,instr=00a52223
+PC=0000001c,instr=006585b3
+PC=00000020,instr=40030333
+PC=00000024,instr=00c62683
+PC=00000028,instr=406686b3
+PC=0000002c,instr=fcb68ae3
+PC=00000030,instr=006585b3
+PC=00000034,instr=406686b3
+PC=00000038,instr=00b68463
+PC=00000040,instr=0005f5b3
+PC=00000044,instr=00530333
+PC=00000048,instr=00662223
+PC=0000004c,instr=00000063
+PC=0000004c,instr=00000063
+============SIM End =============
+** Note: $finish : top_tb.v(29)
+Time: 215 ns Iteration: 0 Instance: /top_tb
+End time: 04:25:02 on Oct 29,2024, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

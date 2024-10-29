@@ -1,0 +1,28 @@
+#=======================================================================
+# Makefrag for rv32ui tests
+#-----------------------------------------------------------------------
+
+rv32ui_sc_tests = \
+	simple \
+    add addi \
+	and andi \
+	auipc \
+	beq bge bgeu blt bltu bne \
+	jal jalr \
+	lb lbu lh lhu lw \
+	lui \
+	or ori \
+	sb sh sw \
+	sll slli \
+	slt slti sltiu sltu \
+	sra srai \
+	srl srli \
+	sub \
+	xor xori \   
+#	fence_i \
+#	single_v1 single_v2 x_led x_led_sim pipeline_test x_led_KeyGenClk \
+#	pipeline_no_hazard pipeline_forward pipeline_load_use pipeline_branch \
+#	x_led_performance_sim x_led_performance performance_sim performance \
+
+
+rv32ui_p_tests = $(addprefix rv32ui-p-, $(rv32ui_sc_tests))

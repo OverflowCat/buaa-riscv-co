@@ -1,0 +1,12 @@
+00001048 D _end
+00000000 T _start
+00002000 D begin_signature
+00002000 D end_signature
+0000004c t fail
+00001040 D fromhost
+00000064 t loop_fail
+00000080 t loop_pass
+00000068 t pass
+00000008 t test_2
+00000028 t test_3
+00001000 D tohost

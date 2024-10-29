@@ -46,9 +46,6 @@ module control (
       xmemwrite = 1'b0;
       xaluctrl  = 4'b0010;
     end else if (opcode == 7'b0100011 && funct3 == 3'b010) begin
-      // S-type store instructions
-    //   wire[10-1:0] dut_res = {alusrc,memtoreg,regwrite,memread,memwrite,branch,aluop};
-//     sw control signal gen error! instr = 0020a223,std_res=1x00100010,control signal=1100100000
       xalusrc   = 1'b1;
       xregwrite = 1'b0;
       xmemwrite = 1'b1;
@@ -56,14 +53,23 @@ module control (
       xbranch   = 1'b0;
       xaluctrl  = 4'b0010;
     end else if (opcode == 7'b1100011) begin
-      // B-type branch instructions
-      xalusrc=0;
-      // xmemtoreg=x;
-      xregwrite=0;
-      xmemread=0;
-      xmemwrite=0;
-      xbranch=1;
-      xaluctrl=4'b0110;
+      // B-type branch instructions (beq)
+      xalusrc   = 0;  // ALU 的第二个操作数选择 reg_rdata2 而不是立即数
+                      // 因为 beq 需要比较两个寄存器的值
+
+      xregwrite = 0;  // 不需要写回寄存器
+                      // beq 是分支指令，不需要保存结果
+
+      xmemread  = 0;  // 不需要读内存
+      xmemwrite = 0;  // 不需要写内存
+                      // beq 只进行比较，不涉及内存操作
+
+      xbranch   = 1;  // 这是分支指令
+                      // 当 branch=1 且 ALU 结果为零(zero=1)时执行跳转
+
+      xaluctrl  = 4'b0110;  // ALU 执行减法操作
+                            // beq 通过比较两个寄存器是否相等来决定是否跳转
+                            // 实现方式是做减法，如果结果为 0 则相等
     end else begin
       xalusrc   = 1'b0;
       xregwrite = 1'b0;

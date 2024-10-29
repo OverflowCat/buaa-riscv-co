@@ -1,8 +1,10 @@
+// 本地测试
 `include "../ctrl_test/control.v"
 `include "../pc_rom_test/pc_rom.v"
 `include "../alu_test/alu.v"
 `include "../regfile_test/regfile.v"
 `include "../data_ram_test/data_ram.v"
+`include "../imm_gen_test/imm_gen.v"
 
 module core_top (
     input wire clk,
@@ -16,9 +18,10 @@ module core_top (
   wire [31:0] mem_rdata;  // 内存读取数据
   wire [31:0] reg_rdata1;  // 从寄存器读取的数据1
   wire [31:0] reg_rdata2;  // 从寄存器读取的数据2
-  wire [31:0] alu_out;  // ALU 结果
+  wire [31:0] alu_out;
   wire [31:0] alu_a;  // ALU 输入 A
   wire [31:0] alu_b;  // ALU 输入 B
+  wire [31:0] imm;
   wire        zero;  // 零标志
 
   // 控制信号
@@ -30,9 +33,17 @@ module core_top (
   wire        memwrite;
   wire        regwrite;
 
+  assign alu_a = reg_rdata1;
+  assign alu_b = alusrc ? imm : reg_rdata2;
+  assign mem_addr = alu_out;
+  assign mem_wdata = reg_rdata2;
+
   data_path u_data_path (
       .clk  (clk),
       .rst_n(rst_n),
+      .imm  (imm),
+      .branch(branch),
+      .zero  (zero),
       .pc   (pc),
       .instr(instr)
   );
@@ -65,6 +76,11 @@ module core_top (
       .RD2(reg_rdata2)
   );
 
+  imm_gen u_imm_gen (
+      .instr(instr),
+      .imm  (imm)
+  );
+
   data_ram u_data_ram (
       .clk(clk),
       .WE (memwrite),
@@ -89,6 +105,9 @@ endmodule
 module data_path (
     input  wire        clk,
     input  wire        rst_n,
+    input  wire [31:0] imm,
+    input  wire        branch,
+    input  wire        zero,
     output reg  [31:0] pc,
     output wire [31:0] instr
 );
@@ -97,8 +116,10 @@ module data_path (
   initial pc = 0;
 
   always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) pc <= 32'h0;  // 复位时PC清零
-    else pc <= pc + 4;  // 每个周期增加4，指向下一条指令
+    if (!rst_n) pc <= 32'h0;
+    else if (branch && zero) pc <= pc + imm;  // 分支跳转
+    else pc <= pc + 4;  // 顺序执行
+    $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
   end
 
 endmodule

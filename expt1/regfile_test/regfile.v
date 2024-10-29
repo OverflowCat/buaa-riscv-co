@@ -10,10 +10,14 @@ module regfile (
 );
 
   //请在这里补充你设计的寄存器堆代码
-
+  integer i;
   // 由 32 个 32 位宽的寄存器组成
   reg [31:0] regfile[31:0];
-
+  initial begin
+    for (i = 0; i < 32; i = i + 1) begin
+      regfile[i] = 32'h0;  // 将所有寄存器初始化为0
+    end
+  end
   // 包含两个读端口(A1/RD1 和 A2/RD2)和一个写端口(A3/WD3)
   // 其中 A1、A2 为 5bit 的寄存器地址，RD1、RD2 为 32bit 的寄存器数据
 
@@ -24,8 +28,9 @@ module regfile (
   // 在写使能信号 WE 为 1 时，WD3(32bit) 的数据将在时钟上升沿写入 A3(5bit)对应的寄存器
   always @(posedge clk) begin
     if (WE) begin
+      $display("Writing to x%d: %h", A3, WD3);
       regfile[A3] <= WD3;
     end
+    // $display("x11 = %h | x13 = %h", regfile[11], regfile[13]);
   end
-
 endmodule

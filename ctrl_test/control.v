@@ -1,102 +1,84 @@
-module control(
-       input[31:0] instr,
-       output      branch,
-       output      memread,
-       output      memtoreg,
-       output[3:0] aluctrl,
-       output      alusrc,
-       output      memwrite,
-       output      regwrite
+module control (
+    input  [31:0] instr,
+    output        branch,
+    output        memread,
+    output        memtoreg,
+    output [ 3:0] aluctrl,
+    output        alusrc,
+    output        memwrite,
+    output        regwrite
 );
 
-//请在这里补充你的控制器代码
+  //请在这里补充你的控制器代码
 
-    wire opcode = instr[6:0];
-    wire instcode = instr[31:24];
-    always @(*)
-        begin
-            case (instr):
-                32'b_00000000_xxxxxx_xxx_000_xxxxx_0110011: // R add
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0010;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b1;
-                    end
-                32'b_01000000_xxxxxx_xxx_000_xxxxx_0110011: // R sub
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0110;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b1;
-                    end
-                32'b_00000000_xxxxxx_xxx_111_xxxxx_0110011: // R or
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0001;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b1;
-                    end
-                32'b_00000000_xxxxxx_xxx_110_xxxxx_0110011: // R and
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0000;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b1;
-                    end
-                32'b_xxxxxxxx_xxxxxx_xxx_010_xxxxx_0000011: // I lw
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b1;
-                        memtoreg = 1'b1;
-                        aluctrl = 4'b0000;
-                        alusrc = 1'b1;
-                        memwrite = 1'b0;
-                        regwrite = 1'b1;
-                    end
-                32'b_xxxxxxxx_xxxxxx_xxx_010_xxxxx_0100011: // S sw
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0000;
-                        alusrc = 1'b1;
-                        memwrite = 1'b1;
-                        regwrite = 1'b0;
-                    end
-                32'b_xxxxxxxx_xxxxxx_xxx_000_xxxxx_1100011: // B Beq
-                    begin
-                        branch = 1'b1;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0110;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b0;
-                    end
-                default:
-                    begin
-                        branch = 1'b0;
-                        memread = 1'b0;
-                        memtoreg = 1'b0;
-                        aluctrl = 4'b0000;
-                        alusrc = 1'b0;
-                        memwrite = 1'b0;
-                        regwrite = 1'b0;
-                    end
-            endcase
-        end
+  reg xbranch = 1'b0;
+  reg xmemread = 1'b0;
+  reg xmemtoreg = 1'b0;
+  reg [3:0] xaluctrl = 4'b0000;
+  reg xalusrc = 1'b0;
+  reg xmemwrite = 1'b0;
+  reg xregwrite = 1'b0;
 
+  wire [6:0] opcode = instr[6:0];
+  wire [2:0] funct3 = instr[14:12];
+  wire [6:0] funct7 = instr[31:25];
+
+  always @(*) begin
+    if (opcode == 7'b0110011) begin
+      // R-type instructions
+      case (funct3)
+        3'h0:
+        xaluctrl = funct7[5]  /* 0x20 = 0010 0000 */ ? 4'b0110  /* sub */ : 4'b0010  /* add */;
+        3'h6: xaluctrl = 4'b0001;  // or
+        3'h7: xaluctrl = 4'b0000;  // and
+      endcase
+      xbranch   = 1'b0;
+      xalusrc   = 1'b0;
+      xmemtoreg = 1'b0;
+      xmemwrite = 1'b0;
+      xregwrite = 1'b1;
+    end else if (opcode == 7'b0000011) begin
+      // I-type load instructions
+      xalusrc   = 1'b1;
+      xregwrite = 1'b1;
+      xmemread  = 1'b1;
+      xmemtoreg = 1'b1;
+      xmemwrite = 1'b0;
+      xaluctrl  = 4'b0010;
+    end else if (opcode == 7'b0100011 && funct3 == 3'b010) begin
+      // S-type store instructions
+    //   wire[10-1:0] dut_res = {alusrc,memtoreg,regwrite,memread,memwrite,branch,aluop};
+//     sw control signal gen error! instr = 0020a223,std_res=1x00100010,control signal=1100100000
+      xalusrc   = 1'b1;
+      xregwrite = 1'b0;
+      xmemwrite = 1'b1;
+      xmemread  = 1'b0;
+      xbranch   = 1'b0;
+      xaluctrl  = 4'b0010;
+    end else if (opcode == 7'b1100011) begin
+      // B-type branch instructions
+      xalusrc=0;
+      // xmemtoreg=x;
+      xregwrite=0;
+      xmemread=0;
+      xmemwrite=0;
+      xbranch=1;
+      xaluctrl=4'b0110;
+    end else begin
+      xalusrc   = 1'b0;
+      xregwrite = 1'b0;
+      xmemtoreg = 1'b0;
+      xmemread  = 1'b0;
+      xmemwrite = 1'b0;
+      xbranch   = 1'b0;
+      xaluctrl  = 4'b0000;
+    end
+  end
+  assign branch   = xbranch;
+  assign memread  = xmemread;
+  assign memtoreg = xmemtoreg;
+  assign aluctrl  = xaluctrl;
+  assign alusrc   = xalusrc;
+  assign memwrite = xmemwrite;
+  assign regwrite = xregwrite;
 endmodule

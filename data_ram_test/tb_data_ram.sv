@@ -37,7 +37,7 @@ initial begin
     $display("=============================================");
     $display("                Test DATA-RAM ");
     $display("          simulator Run at least 1us ");
-    $display("============================================="); 
+    $display("=============================================");
     for(i=0;i<1024;i=i+64)begin
         rand_data = i;
         write_to_regfile(i,rand_data);
@@ -55,12 +55,12 @@ initial begin
         end
     end
     if((!error_flag))begin
-    $display("    ____     ___    _____   _____ "); 
-    $display("   / __ \\   /   |  / ___/  / ___/ ");    
-    $display("  / /_/ /  / /| |  \\__ \\   \\__ \\  ");    
-    $display(" / ____/  / ___ | ___/ /  ___/ /  ");    
-    $display("/_/      /_/  |_|/____/  /____/   ");   
-    $display(">>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<");    
+    $display("    ____     ___    _____   _____ ");
+    $display("   / __ \\   /   |  / ___/  / ___/ ");
+    $display("  / /_/ /  / /| |  \\__ \\   \\__ \\  ");
+    $display(" / ____/  / ___ | ___/ /  ___/ /  ");
+    $display("/_/      /_/  |_|/____/  /____/   ");
+    $display(">>>>>>>>>>>>>>> PASS <<<<<<<<<<<<<");
     end
     else begin
     $display("    ______    ___     ____    __ ");
@@ -68,12 +68,12 @@ initial begin
     $display("  / /_      / /| |   / /    / /  ");
     $display(" / __/     / ___ | _/ /    / /___");
     $display("/_/       /_/  |_|/___/   /_____/");
-    $display(">>>>>>>>>>>>>>> FAIL <<<<<<<<<<<<<"); 
-    end  
+    $display(">>>>>>>>>>>>>>> FAIL <<<<<<<<<<<<<");
+    end
     #200
     $dumpfile("data_ram.vcd");
     $dumpvars;
-    $finish();    
+    $finish();
 end
 
 task write_to_regfile;
@@ -94,6 +94,3 @@ endtask
 
 
 endmodule
-
-
-

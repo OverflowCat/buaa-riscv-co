@@ -30,7 +30,7 @@ initial begin
     mem[10] = 32'h0000000F;
 end
 
-reg out;
+reg[31:0] out;
 
 always @(posedge clk) begin
     if (WE) begin

@@ -38,7 +38,7 @@ module control (
       xmemwrite = 1'b0;
       xregwrite = 1'b1;
     end else if (opcode == 7'b0000011) begin
-      // I-type load instructions
+      // I-type, lw
       xalusrc   = 1'b1;
       xregwrite = 1'b1;
       xmemread  = 1'b1;

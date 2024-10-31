@@ -26,6 +26,8 @@ data_ram   dut_ram(
     .RD(RD)
 );
 
+reg[31:0] stdmem[1023:0];
+
 initial begin
     RE = 1'b0;
     WE = 1'b0;
@@ -38,6 +40,29 @@ initial begin
     $display("                Test DATA-RAM ");
     $display("          simulator Run at least 1us ");
     $display("=============================================");
+    // read 0~10
+    RE = 1;
+    stdmem[0] = 32'h00000001;
+    stdmem[1] = 32'h00000001;
+    stdmem[2] = 32'h00000004;
+    stdmem[3] = 32'h00000016;
+    stdmem[4] = 32'h00000008;
+    stdmem[5] = 32'h0000000F;
+    stdmem[6] = 32'h00000011;
+    stdmem[7] = 32'h0000002E;
+    stdmem[8] = 32'h00000000;
+    stdmem[9] = 32'h00000001;
+    stdmem[10] = 32'h0000000F;
+    for (i=0;i<10;i=i+1)begin
+        A = i*4;
+        #1
+        $display("RD = %x, i = %x, A = %x", RD, i, A);
+        if (RD != stdmem[i]) begin
+            error_flag = 1'b1;
+            $display("Error : Read DATA-RAM Addr %x is %x,should be %x!", A, RD, stdmem[i]);
+        end
+    end
+    RE = 0;
     for(i=0;i<1024;i=i+64)begin
         rand_data = i;
         write_to_regfile(i,rand_data);
@@ -49,6 +74,7 @@ initial begin
         A = i*4;
         #1
         // if((RD != i) | $isunknown(RD))begin
+        $display("RD = %x, i = %x, A = %x", RD, i, A);
         if (RD != i) begin
             error_flag = 1'b1;
             $display("Error : Read DATA-RAM Addr %x is %x,should be %x!",A,RD,std_rf[i]);

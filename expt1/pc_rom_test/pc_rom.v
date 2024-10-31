@@ -8,7 +8,7 @@ module pc_rom(
 reg [31:0] mem [0:1041];
 
 initial begin
-    // $readmemb("code.dat", mem);
+    // $readmemb("code.dat", mem); // testbench 单测
     // $readmemb("../pc_rom_test/code.dat", mem);
     $readmemb("../cpu_core_test/code_b.dat", mem); // 本地测试
     // $readmemb("code_b.dat", mem); // 希冀平台

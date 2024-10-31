@@ -22,6 +22,7 @@ initial begin
     for(i=0;i<256;i=i+1)begin
         A = i*4;
         #1
+        $display("RD = %x, i = %x, A = %x", RD, i, A);
         if((RD != i)/*  | $isunknown(RD) */)begin
             error_flag = 1'b1;
             $display("Error : Read PC-ROM Addr %x is %x,should be %x!",i,RD,i);

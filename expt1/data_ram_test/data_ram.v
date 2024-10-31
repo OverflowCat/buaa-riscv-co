@@ -2,48 +2,65 @@ module data_ram(
     input clk,
     input WE,
     input RE,
-    input[31:0] A,
-    input[31:0] WD,
-    output[31:0] RD
+    input [31:0] A,       // 地址
+    input [31:0] WD,      // 写入数据
+    output [31:0] RD      // 读取数据
 );
 
-//请在这里补充你的数据存储器代码
+// 4096 * 8 位（即 4096 字节）容量的存储单元
+reg [7:0] mem [0:4095];
 
-// 设计一个数据存储器(容量为 32 * 1024bit)。当 RE=1 时，将存储器中地址 A
-// 对应的数据读出至 RD；当 WE=1 且 clk 时钟处于上升沿时，将 WD 端口的数据
-// 写入到地址 A 所对应的存储单元中
-
-// 1024 个 32 位宽的存储单元
-reg [31:0] mem [0:1023];
-
+integer i;
 initial begin
-    mem[0] = 32'h00000001;
-    mem[1] = 32'h00000001;
-    mem[2] = 32'h00000004;
-    mem[3] = 32'h00000016;
-    mem[4] = 32'h00000008;
-    mem[5] = 32'h0000000F;
-    mem[6] = 32'h00000011;
-    mem[7] = 32'h0000002E;
-    mem[8] = 32'h00000000;
-    mem[9] = 32'h00000001;
-    mem[10] = 32'h0000000F;
+    // 初始化内存单元，前 11 个单元数据初始化
+    mem[0] = 8'h01;
+    mem[1] = 8'h00;
+    mem[2] = 8'h00;
+    mem[3] = 8'h00;
+
+    mem[4] = 8'h01;
+    mem[5] = 8'h00;
+    mem[6] = 8'h00;
+    mem[7] = 8'h00;
+
+    mem[8] = 8'h04;
+    mem[9] = 8'h00;
+    mem[10] = 8'h00;
+    mem[11] = 8'h00;
+
+    mem[12] = 8'h16;
+    mem[13] = 8'h00;
+    mem[14] = 8'h00;
+    mem[15] = 8'h00;
+
+    // 按需初始化其余内存单元
+    for (i = 16; i < 4096; i = i + 1) begin
+        mem[i] = 8'h00;
+    end
 end
 
-reg[31:0] out;
+// 定义输出寄存器
+reg [31:0] out;
 
+// 写操作：当 WE 为 1 且 clk 上升沿时，将 WD 的 32 位数据分配到地址 A 对应的 4 个字节
 always @(posedge clk) begin
     if (WE) begin
-        mem[A] <= WD;
+        mem[A]     <= WD[7:0];
+        mem[A + 1] <= WD[15:8];
+        mem[A + 2] <= WD[23:16];
+        mem[A + 3] <= WD[31:24];
     end
 end
 
+// 读操作：当 RE 为 1 时，从地址 A 开始读取 4 个字节并组合成 32 位数据
 always @(*) begin
-    if (RE == 1) begin
-        out = mem[A];
+    if (RE) begin
+        out = {mem[A + 3], mem[A + 2], mem[A + 1], mem[A]};
+        $display("Reading from mem[%d]: %h", A, out);
     end
 end
 
+// 将读出的数据分配给输出端口 RD
 assign RD = out;
 
 endmodule

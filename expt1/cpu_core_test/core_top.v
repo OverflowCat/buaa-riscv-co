@@ -33,10 +33,11 @@ module core_top (
   wire        memwrite;
   wire        regwrite;
 
-  assign alu_a = reg_rdata1;
-  assign alu_b = alusrc ? imm : reg_rdata2;
+  assign alu_a = memtoreg ? mem_rdata : reg_rdata1;
+  assign alu_b = alusrc ? (memtoreg ? 0 : imm) : reg_rdata2;
   assign mem_addr = alu_out;
   assign mem_wdata = reg_rdata2;
+  // mem_rdata
 
   data_path u_data_path (
       .clk  (clk),
@@ -67,10 +68,15 @@ module core_top (
 
   regfile u_regfile (
       .clk(clk),
+      // 写使能
       .WE (regwrite),
+      // 读寄存器地址 1
       .A1 (instr[19:15]),
+      // 读寄存器地址 2
       .A2 (instr[24:20]),
+      // 写寄存器地址
       .A3 (instr[11:7]),
+      // 写入寄存器的数据
       .WD3(alu_out),
       .RD1(reg_rdata1),
       .RD2(reg_rdata2)

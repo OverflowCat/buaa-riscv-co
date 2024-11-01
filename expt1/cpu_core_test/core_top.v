@@ -1,10 +1,10 @@
 // 本地测试
-`include "../ctrl_test/control.v"
-`include "../pc_rom_test/pc_rom.v"
-`include "../alu_test/alu.v"
-`include "../regfile_test/regfile.v"
-`include "../data_ram_test/data_ram.v"
-`include "../imm_gen_test/imm_gen.v"
+// `include "../ctrl_test/control.v"
+// `include "../pc_rom_test/pc_rom.v"
+// `include "../alu_test/alu.v"
+// `include "../regfile_test/regfile.v"
+// `include "../data_ram_test/data_ram.v"
+// `include "../imm_gen_test/imm_gen.v"
 
 module core_top (
     input wire clk,
@@ -32,12 +32,15 @@ module core_top (
   wire        alusrc;
   wire        memwrite;
   wire        regwrite;
+  wire [31:0] reg_wdata;
 
-  assign alu_a = memtoreg ? mem_rdata : reg_rdata1;
-  assign alu_b = alusrc ? (memtoreg ? 0 : imm) : reg_rdata2;
+  assign alu_a = /* memtoreg ? mem_rdata :  */reg_rdata1;   // 如果是 lw 指令，选择 mem_rdata，否则选择 reg_rdata1
+  assign alu_b = /* memtoreg ? 32'b0 :  */(alusrc ? imm : reg_rdata2); // 如果是 lw 指令，选择 0，否则按原逻辑
+
   assign mem_addr = alu_out;
   assign mem_wdata = reg_rdata2;
-  // mem_rdata
+
+  assign reg_wdata = memtoreg ? mem_rdata : alu_out;
 
   data_path u_data_path (
       .clk  (clk),
@@ -77,7 +80,7 @@ module core_top (
       // 写寄存器地址
       .A3 (instr[11:7]),
       // 写入寄存器的数据
-      .WD3(alu_out),
+      .WD3(reg_wdata),
       .RD1(reg_rdata1),
       .RD2(reg_rdata2)
   );
@@ -119,13 +122,13 @@ module data_path (
 );
 
   // 初始PC值
-  initial pc = 0;
+  // initial pc = 0; // oj 的 Answer 是 xxxxxxxx
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) pc <= 32'h0;
     else if (branch && zero) pc <= pc + imm;  // 分支跳转
     else pc <= pc + 4;  // 顺序执行
-    $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
+    // $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
   end
 
 endmodule

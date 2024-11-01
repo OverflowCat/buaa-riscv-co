@@ -28,7 +28,7 @@ module regfile (
   // 在写使能信号 WE 为 1 时，WD3(32bit) 的数据将在时钟上升沿写入 A3(5bit)对应的寄存器
   always @(posedge clk) begin
     if (WE) begin
-      $display("Writing to x%d: %h", A3, WD3);
+      // $display("Writing to x%d: %h", A3, WD3);
       regfile[A3] <= WD3;
     end
     // $display("x11 = %h | x13 = %h", regfile[11], regfile[13]);

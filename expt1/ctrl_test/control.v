@@ -49,6 +49,7 @@ module control (
       xalusrc   = 1'b1;
       xregwrite = 1'b0;
       xmemwrite = 1'b1;
+      // xmemtoreg = 1'b0;
       xmemread  = 1'b0;
       xbranch   = 1'b0;
       xaluctrl  = 4'b0010;

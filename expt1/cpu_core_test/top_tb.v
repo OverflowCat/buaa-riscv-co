@@ -26,6 +26,8 @@ initial begin
     $display("============SIM Start =============");
 #200;
     $display("============SIM End =============");
+    $dumpfile("top_tb.vcd");
+    $dumpvars;
     $finish();
 end
 

@@ -56,7 +56,7 @@ initial begin
     for (i=0;i<10;i=i+1)begin
         A = i*4;
         #1
-        $display("RD = %x, i = %x, A = %x", RD, i, A);
+        $display("RD = %x, should be %x, i = %x, A = %x", RD, stdmem[i], i, A);
         if (RD != stdmem[i]) begin
             error_flag = 1'b1;
             $display("Error : Read DATA-RAM Addr %x is %x,should be %x!", A, RD, stdmem[i]);

@@ -1,0 +1,23 @@
+# Read design
+read_verilog -sv imm_gen_test/imm_gen.v
+read_verilog -sv ctrl_test/control.v
+read_verilog -sv alu_test/alu.v
+read_verilog -sv regfile_test/regfile.v
+read_verilog -sv data_ram_test/data_ram.v
+read_verilog -sv pc_rom_test/pc_rom.v
+read_verilog -sv cpu_core_test/core_top.v
+
+# Elaborate design hierarchy
+hierarchy -check -top core_top
+
+# Keep all signals
+setattr -set keep 1
+select -module core_top
+setattr -set keep_hierarchy 1
+
+# Basic optimizations (minimal)
+proc
+opt_clean
+
+# Generate visualization
+show -format dot -prefix cpu_rtl -colors 2 core_top

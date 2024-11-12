@@ -1,0 +1,12 @@
+{
+  "name": "expt2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "toolbox": "cd tb && sh 工具箱.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

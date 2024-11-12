@@ -29,14 +29,27 @@ module core_top (
   wire        memread;
   wire        memtoreg;
   wire [ 3:0] aluctrl;
-  wire        alusrc;
+  wire        alusrc;  // 立即数选择，1 表示选择立即数，0 表示选择 reg_rdata2
   wire        memwrite;
   wire        regwrite;
   wire [31:0] reg_wdata;
 
-  assign alu_a = /* memtoreg ? mem_rdata :  */reg_rdata1;   // 如果是 lw 指令，选择 mem_rdata，否则选择 reg_rdata1
-  assign alu_b = /* memtoreg ? 32'b0 :  */(alusrc ? imm : reg_rdata2); // 如果是 lw 指令，选择 0，否则按原逻辑
-
+  assign alu_a = reg_rdata1;
+  assign alu_b = (alusrc ? imm : reg_rdata2);
+  // 考虑 lw 指令，rd = M[rs1+imm][0:31] 即
+  // mem_addr = rs1 + imm
+  // mem_rdata = M[mem_addr][0:31]
+  // reg_wdata = mem_rdata
+  // 考虑 lhu 指令，rd = M[rs1+imm][0:15]
+  // mem_addr = rs1 + imm
+  // mem_rdata = M[mem_addr][0:15] zero-extended
+  // reg_wdata = mem_rdata
+  // 考虑 addi 指令，rd = rs1 + imm
+  // alu_out = rs1 + imm
+  // reg_wdata = alu_out
+  // 考虑 lui 指令，rd = imm << 12
+  // alu_out = imm << 12 // 扩展 alu 支持 sll？
+  // reg_wdata = alu_out
   assign mem_addr = alu_out;
   assign mem_wdata = reg_rdata2;
 
@@ -52,7 +65,6 @@ module core_top (
       .instr(instr)
   );
 
-  // PC_ROM 的例化
   pc_rom u_pc_rom (
       .A (pc),
       .RD(instr)
@@ -126,7 +138,14 @@ module data_path (
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) pc <= 32'h0;
-    else if (branch && zero) pc <= pc + imm;  // 分支跳转
+    else if (
+        // 分支跳转
+        branch &&
+        // 若 funct3 为 0x0 且 zero 为 1 时跳转（beq）
+        ((instr[14:12] == 3'b000 && zero == 1'b1)
+        // 若 funct3 为 0x1 且 zero 为 0 时跳转（bne）
+        || (instr[14:12] == 3'b001 && zero == 1'b0)))
+      pc <= pc + imm;
     else pc <= pc + 4;  // 顺序执行
     // $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
   end

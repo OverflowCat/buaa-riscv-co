@@ -3,9 +3,9 @@
 `include "./control.v"
 `include "./instr_rom.v"
 `include "./alu.v"
-`include "../../expt1/regfile_test/regfile.v"
-`include "../../expt1/data_ram_test/data_ram.v"
-`include "../../expt1/imm_gen_test/imm_gen.v"
+`include "./regfile.v"
+`include "./data_ram.v"
+`include "./imm_gen.v"
 
 module core_top (
     input wire clk,
@@ -35,13 +35,14 @@ module core_top (
   wire        regwrite;
   wire [31:0] reg_wdata;
 
-  assign alu_a = /* memtoreg ? mem_rdata :  */reg_rdata1;   // 如果是 lw 指令，选择 mem_rdata，否则选择 reg_rdata1
-  assign alu_b = /* memtoreg ? 32'b0 :  */(alusrc ? imm : reg_rdata2); // 如果是 lw 指令，选择 0，否则按原逻辑
+  assign alu_a = reg_rdata1;
+  assign alu_b = (alusrc ? imm : reg_rdata2);
 
   assign mem_addr = alu_out;
   assign mem_wdata = reg_rdata2;
 
-  assign reg_wdata = memtoreg ? mem_rdata : alu_out;
+  assign reg_wdata = memtoreg ?  /* 如果是 lw 指令，
+  则数据通路为 reg -> alu -> mem -> reg */ mem_rdata : alu_out;
 
   data_path u_data_path (
       .clk  (clk),

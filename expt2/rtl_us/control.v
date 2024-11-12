@@ -10,6 +10,16 @@ module control (
 );
 
   //请在这里补充你的控制器代码
+  localparam [3:0] ALU_AND = 4'b0000;
+  localparam [3:0] ALU_OR = 4'b0001;
+  localparam [3:0] ALU_XOR = 4'b0011;
+  localparam [3:0] ALU_ADD = 4'b0010;
+  localparam [3:0] ALU_SUB = 4'b0110;
+  localparam [3:0] ALU_SLTU = 4'b1000;
+  localparam [3:0] ALU_SLT = 4'b1001;
+  localparam [3:0] ALU_SLL = 4'b1100;
+  localparam [3:0] ALU_SRL = 4'b1110;
+  localparam [3:0] ALU_SRA = 4'b1111;
 
   reg xbranch = 1'b0;
   reg xmemread = 1'b0;
@@ -27,24 +37,48 @@ module control (
     if (opcode == 7'b0110011) begin
       // R-type instructions
       case (funct3)
-        3'h0:
-        xaluctrl = funct7[5]  /* 0x20 = 0010 0000 */ ? 4'b0110  /* sub */ : 4'b0010  /* add */;
-        3'h6: xaluctrl = 4'b0001;  // or
-        3'h7: xaluctrl = 4'b0000;  // and
+        3'h0: xaluctrl = funct7[5]  /* 0x20 = 0010 0000 */ ? ALU_SUB : ALU_ADD;
+        3'h6: xaluctrl = ALU_OR;  // or
+        3'h7: xaluctrl = ALU_AND;  // and
+        3'h1: xaluctrl = ALU_SLL;  // sll
+        3'h5: xaluctrl = funct7[5] ? ALU_SRA : ALU_SRL;  // srl or sra
+        3'h2: xaluctrl = ALU_SLT;
+        3'h3: xaluctrl = ALU_SLTU;
       endcase
       xbranch   = 1'b0;
       xalusrc   = 1'b0;
       xmemtoreg = 1'b0;
       xmemwrite = 1'b0;
       xregwrite = 1'b1;
+    end else if (opcode == 7'b0010011) begin
+      // I-type immediate instructions
+      // 虽然都是I型指令，但数据通路不一样。
+      // xxi 是 rd =  rs1 op imm，而 lx 是先计算 rs1 + imm 然后再从内存里取 M[rs1 + imm]
+      xalusrc   = 1'b1;  // 使用立即数作为 ALU 的第二个操作数
+      xregwrite = 1'b1;  // 写回寄存器
+      xmemtoreg = 1'b0;  // 不从内存写回数据
+      xmemread  = 1'b1;  // 读内存
+      xmemwrite = 1'b0;  // 不写内存
+      xbranch   = 1'b0;  // 不是分支指令
+      case (funct3)
+        3'h0: xaluctrl = ALU_ADD;  // addi
+        3'h4: xaluctrl = ALU_XOR;  // xori
+        3'h6: xaluctrl = ALU_OR;  // ori
+        3'h7: xaluctrl = ALU_AND;  // andi
+        3'h1: xaluctrl = ALU_SLL;  // slli
+        3'h5: xaluctrl = funct7[5] ? ALU_SRA : ALU_SRL;  // srli or srai
+        3'h2: xaluctrl = ALU_SLT;  // slti
+        3'h3: xaluctrl = ALU_SLTU;  // sltiu
+      endcase
     end else if (opcode == 7'b0000011) begin
-      // I-type, lw
+      // I-type load instructions
+      // Only lw
       xalusrc   = 1'b1;
       xregwrite = 1'b1;
       xmemread  = 1'b1;
       xmemtoreg = 1'b1;
       xmemwrite = 1'b0;
-      xaluctrl  = 4'b0010;
+      xaluctrl  = ALU_ADD;
     end else if (opcode == 7'b0100011 && funct3 == 3'b010) begin
       xalusrc   = 1'b1;
       xregwrite = 1'b0;

@@ -1,15 +1,8 @@
 // 本地测试
-// `include "../ctrl_test/control.v"
-// `include "../pc_rom_test/pc_rom.v"
-// `include "../alu_test/alu.v"
-// `include "../regfile_test/regfile.v"
-// `include "../data_ram_test/data_ram.v"
-// `include "../imm_gen_test/imm_gen.v"
-
-`include "data_path.v"
-`include "control.v"
-`include "instr_rom.v"
-`include "alu.v"
+`include "./data_path.v"
+`include "./control.v"
+`include "./instr_rom.v"
+`include "./alu.v"
 `include "../../expt1/regfile_test/regfile.v"
 `include "../../expt1/data_ram_test/data_ram.v"
 `include "../../expt1/imm_gen_test/imm_gen.v"
@@ -116,3 +109,5 @@ module core_top (
   );
 
 endmodule
+
+// 你需要例化的子模块代码可以跟在这后面,或者将子模块文件放在同文件夹下

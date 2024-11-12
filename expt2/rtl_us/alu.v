@@ -7,6 +7,16 @@ module alu (
 );
 
   //请在这里补充你的ALU实现代码
+  localparam [3:0] ALU_AND = 4'b0000;
+  localparam [3:0] ALU_OR = 4'b0001;
+  localparam [3:0] ALU_XOR = 4'b0011;
+  localparam [3:0] ALU_ADD = 4'b0010;
+  localparam [3:0] ALU_SUB = 4'b0110;
+  localparam [3:0] ALU_SLTU = 4'b1000;
+  localparam [3:0] ALU_SLT = 4'b1001;
+  localparam [3:0] ALU_SLL = 4'b1100;
+  localparam [3:0] ALU_SRL = 4'b1110;
+  localparam [3:0] ALU_SRA = 4'b1111;
 
   reg [31:0] out;
   reg zero;
@@ -18,20 +28,20 @@ module alu (
 
   always @(*) begin
     case (ALUCtrl)
-      4'b0000: out = A & B;  // AND
-      4'b0001: out = A | B;  // OR
-      4'b0011: out = A ^ B;  // XOR
-      4'b0010: out = A + B;  // ADD
-      4'b0110: out = A - B;  // SUB
-      4'b1000: out = ($unsigned(A) < $unsigned(B)) ? 32'b1 : 32'b0;  // SLTU
-      4'b1001: out = ($signed(A) < $signed(B)) ? 32'b1 : 32'b0;  // SLT
-      4'b1100: out = A << B;  // SLL
-      4'b1110: out = A >> B;  // SRL
-      4'b1111: out = A >>> B;  // SRA
+      ALU_AND: out = A & B;  // AND
+      ALU_OR: out = A | B;  // OR
+      ALU_XOR: out = A ^ B;  // XOR
+      ALU_ADD: out = A + B;  // ADD
+      ALU_SUB: out = A - B;  // SUB
+      ALU_SLTU: out = ($unsigned(A) < $unsigned(B)) ? 32'b1 : 32'b0;  // SLTU
+      ALU_SLT: out = ($signed(A) < $signed(B)) ? 32'b1 : 32'b0;  // SLT
+      ALU_SLL: out = A << B;  // SLL
+      ALU_SRL: out = A >> B;  // SRL
+      ALU_SRA: out = A >>> B;  // SRA
       default: out = 32'b0;
-    // beq/bne:   使用 SUB 运算，检查 zero flag
-    // blt/bge:   使用 SLT 运算，检查 ALU 输出
-    // bltu/bgeu: 使用 SLTU 运算，检查 ALU 输出
+      // beq/bne:   使用 SUB 运算，检查 zero flag
+      // blt/bge:   使用 SLT 运算，检查 ALU 输出
+      // bltu/bgeu: 使用 SLTU 运算，检查 ALU 输出
     endcase
 
     // Set ZERO flag

@@ -4,7 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "toolbox": "cd tb && sh 工具箱.sh"
+    "toolbox": "cd tb && sh 工具箱.sh",
+    "bin2txt": "cd tb && python3 tools/isa_test.py tsr_bin",
+    "bin": "cd tb && python3 tools/isa_test.py sim_bin",
+    "txt": "cd tb && python3 tools/isa_test.py sim_rtl",
+    "isa": "cd tb && python3 tools/isa_test.py all_isa",
+    "wave": "cd tb && gtkwave tb.vcd",
+    "vsim:bin": "cd tb && python3 tools/isa_test.py vsim_bin",
+    "vsim:txt": "cd tb && python3 tools/isa_test.py vsim_rtl",
+    "vsim:isa": "cd tb && python3 tools/isa_test.py vsim_isa",
+    "clean": "cd tb && rm -f tb *.lxt *.vcd inst.txt transcript vlog.opt vsim.wlf *.vstf modelsim.ini && rm -rf work"
   },
   "keywords": [],
   "author": "",

@@ -3,17 +3,16 @@ const fs = require('fs');
 const path = require('path');
 
 // 输出文件
-const outputFile = 'build.v';
+const outputFile = 'core_top.v';
 
 // 要合并的文件列表
 const files = [
-  './data_path.v',
   './control.v',
   './instr_rom.v',
   './alu.v',
-  '../../expt1/regfile_test/regfile.v',
+  './regfile.v',
   './data_ram.v',
-  '../../expt1/imm_gen_test/imm_gen.v',
+  './imm_gen.v',
   './core_top.v'  // core_top.v 放在最后，因为它依赖其他模块
 ];
 
@@ -53,3 +52,8 @@ try {
 } catch (err) {
   console.error('Error:', err);
 }
+
+// `zip -r cpu.zip core_top.v`;
+// run using process
+const { exec } = require('child_process');
+exec('zip -r cpu.zip core_top.v');

@@ -26,9 +26,9 @@ wire [31:0] x27 = `CorePath.u_data_path.rf.rf[27];
 
 // 读入程序
 initial begin
-    for(r=0; r<1024; r=r+1) begin//先填充0
-        `CorePath.u_data_path.u_instr_rom.cpu_instr_rom[r] = 32'h0;
-    end
+    // for(r=0; r<1024; r=r+1) begin//先填充0
+    //     `CorePath.u_data_path.u_instr_rom.cpu_instr_rom[r] = 32'h0;
+    // end
     $readmemh ("inst.txt", `CorePath.u_data_path.u_instr_rom.cpu_instr_rom);//把程序(inst.txt)写进去
 end
 
@@ -93,7 +93,7 @@ endtask : sysrst
 
 initial begin
     wait(rst_n===1'b1);
-    if(`CorePath.u_data_path.u_pc_rom.cpu_instr_rom[0]==32'h0) begin//如果inst.txt读入失败，停止仿真
+    if(`CorePath.u_data_path.u_instr_rom.cpu_instr_rom[0]==32'h0) begin//如果inst.txt读入失败，停止仿真
         $display("*Sim tool:Inst load error");
         #10;
         $stop;

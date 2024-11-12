@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "node rtl_us/build.js",
     "toolbox": "cd tb && sh 工具箱.sh",
     "bin2txt": "cd tb && python3 tools/isa_test.py tsr_bin",
     "bin": "cd tb && python3 tools/isa_test.py sim_bin",

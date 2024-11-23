@@ -12,11 +12,12 @@ module alu (
   reg zero;
 
   initial begin
-    out = 32'b0;
+    out  = 32'b0;
     zero = 1'b0;
   end
 
   always @(*) begin
+    $display("A = %h, B = %h, ALUCtrl = %b, out = %h", A, B, ALUCtrl, out);
     case (ALUCtrl)
       4'b0000: out = A & B;  // AND
       4'b0001: out = A | B;  // OR
@@ -46,7 +47,8 @@ module control (
     output [ 3:0] aluctrl,
     output        alusrc,
     output        memwrite,
-    output        regwrite
+    output        regwrite,
+    output [ 3:0] bcond
 );
 
   //请在这里补充你的控制器代码
@@ -58,6 +60,7 @@ module control (
   reg xalusrc = 1'b0;
   reg xmemwrite = 1'b0;
   reg xregwrite = 1'b0;
+  reg xbcond = 4'b1111;
 
   wire [6:0] opcode = instr[6:0];
   wire [2:0] funct3 = instr[14:12];
@@ -81,6 +84,7 @@ module control (
       // I-type, lw
       xalusrc   = 1'b1;
       xregwrite = 1'b1;
+      xbranch   = 1'b0;
       xmemread  = 1'b1;
       xmemtoreg = 1'b1;
       xmemwrite = 1'b0;
@@ -95,22 +99,22 @@ module control (
       xaluctrl  = 4'b0010;
     end else if (opcode == 7'b1100011) begin
       // B-type branch instructions (beq)
-      xalusrc   = 0;  // ALU 的第二个操作数选择 reg_rdata2 而不是立即数
-                      // 因为 beq 需要比较两个寄存器的值
-
-      xregwrite = 0;  // 不需要写回寄存器
-                      // beq 是分支指令，不需要保存结果
-
-      xmemread  = 0;  // 不需要读内存
-      xmemwrite = 0;  // 不需要写内存
-                      // beq 只进行比较，不涉及内存操作
-
-      xbranch   = 1;  // 这是分支指令
-                      // 当 branch=1 且 ALU 结果为零(zero=1)时执行跳转
-
-      xaluctrl  = 4'b0110;  // ALU 执行减法操作
-                            // beq 通过比较两个寄存器是否相等来决定是否跳转
-                            // 实现方式是做减法，如果结果为 0 则相等
+      xalusrc = 1'b0;  // ALU 的第二个操作数选择 reg_rdata2 而不是立即数
+      // 因为 beq 需要比较两个寄存器的值
+      xregwrite = 1'b0;  // 不需要写回寄存器
+      // beq 是分支指令，不需要保存结果
+      xmemread = 1'b0;  // 不需要读内存
+      xmemwrite = 1'b0;  // 不需要写内存
+      // beq 只进行比较，不涉及内存操作
+      xbranch = 1'b1;  // 这是分支指令
+      // 当 branch=1 且 ALU 结果为零(zero=1)时执行跳转
+      xaluctrl = 4'b0110;  // ALU 执行减法操作
+                           // beq 通过比较两个寄存器是否相等来决定是否跳转
+                           // 实现方式是做减法，如果结果为 0 则相等
+      xbcond = funct3 === 0 ?  // beq
+      4'b0000 :
+      // bne
+      4'b0001;
     end else begin
       xalusrc   = 1'b0;
       xregwrite = 1'b0;
@@ -121,13 +125,14 @@ module control (
       xaluctrl  = 4'b0000;
     end
   end
-  assign branch   = xbranch;
-  assign memread  = xmemread;
+  assign branch = xbranch;
+  assign memread = xmemread;
   assign memtoreg = xmemtoreg;
-  assign aluctrl  = xaluctrl;
-  assign alusrc   = xalusrc;
+  assign aluctrl = xaluctrl;
+  assign alusrc = xalusrc;
   assign memwrite = xmemwrite;
   assign regwrite = xregwrite;
+  assign bcond = xbranch ? xbcond : 4'b1111;
 endmodule
 // 本地测试
 // `include "../ctrl_test/control.v"
@@ -141,29 +146,44 @@ module core_top (
     input wire clk,
     input wire rst_n
 );
+
+  data_path u_data_path (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+endmodule
+
+// 你需要例化的子模块代码可以跟在这后面,或者将子模块文件放在同文件夹下
+
+module data_path (
+    input wire clk,
+    input wire rst_n
+);
+
   // 声明内部信号
-  wire [31:0] pc;  // 程序计数器
-  wire [31:0] instr;  // 指令
-  wire [31:0] mem_addr;  // 内存地址
-  wire [31:0] mem_wdata;  // 内存写入数据
-  wire [31:0] mem_rdata;  // 内存读取数据
-  wire [31:0] reg_rdata1;  // 从寄存器读取的数据1
-  wire [31:0] reg_rdata2;  // 从寄存器读取的数据2
-  wire [31:0] alu_out;
-  wire [31:0] alu_a;  // ALU 输入 A
-  wire [31:0] alu_b;  // ALU 输入 B
-  wire [31:0] imm;
-  wire        zero;  // 零标志
+  reg  [ 31:0] pc;  // 程序计数器
+  wire [ 31:0] instr;  // 指令
+  wire [ 31:0] mem_addr;  // 内存地址
+  wire [ 31:0] mem_wdata;  // 内存写入数据
+  wire [ 31:0] mem_rdata;  // 内存读取数据
+  wire [ 31:0] reg_rdata1;  // 从寄存器读取的数据1
+  wire [ 31:0] reg_rdata2;  // 从寄存器读取的数据2
+  wire [ 31:0] alu_out;
+  wire [ 31:0] alu_a;  // ALU 输入 A
+  wire [ 31:0] alu_b;  // ALU 输入 B
+  wire [ 31:0] imm;
+  wire         zero;  // 零标志
 
   // 控制信号
-  wire        branch;
-  wire        memread;
-  wire        memtoreg;
-  wire [ 3:0] aluctrl;
-  wire        alusrc;
-  wire        memwrite;
-  wire        regwrite;
-  wire [31:0] reg_wdata;
+  wire         branch;
+  wire         memread;
+  wire         memtoreg;
+  wire [  3:0] aluctrl;
+  wire         alusrc;
+  wire         memwrite;
+  wire         regwrite;
+  wire [ 31:0] reg_wdata;
+  wire [3 : 0] bcond;  // 跳转条件
 
   assign alu_a = /* memtoreg ? mem_rdata :  */reg_rdata1;   // 如果是 lw 指令，选择 mem_rdata，否则选择 reg_rdata1
   assign alu_b = /* memtoreg ? 32'b0 :  */(alusrc ? imm : reg_rdata2); // 如果是 lw 指令，选择 0，否则按原逻辑
@@ -173,13 +193,24 @@ module core_top (
 
   assign reg_wdata = memtoreg ? mem_rdata : alu_out;
 
-  data_path u_data_path (
-      .clk  (clk),
-      .rst_n(rst_n)
-  );
+  // 初始PC值
+  // initial pc = 0; // oj 的 Answer 是 xxxxxxxx
+
+  // beq: branch && zero == 1 && bcond == 4'b0000
+  // bne: branch && zero == 0 && bcond == 4'b0001
+  wire jump = branch && ((zero && (bcond == 4'b0000)) || ((!zero) && (bcond == 4'b0001)));
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) pc <= 32'h0;
+    else if (jump) pc <= pc + imm;  // 分支跳转
+    else pc <= pc + 4;  // 顺序执行
+    // $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
+    $display("pc = %h, instr = %h", pc, instr);
+    $display("alu_a = %h, alu_b = %h, alu_out = %h", alu_a, alu_b, alu_out);
+    $display("branch = %b, bcond= %b, zero = %b", branch, bcond, zero);
+  end
 
   // PC_ROM 的例化
-  pc_rom u_pc_rom (
+  pc_rom u_instr_rom (
       .A (pc),
       .RD(instr)
   );
@@ -187,6 +218,7 @@ module core_top (
   control u_controller (
       .instr   (instr),     // 从 pc_rom 获取的指令
       .branch  (branch),    // 分支控制信号
+      .bcond   (bcond),     // 跳转条件
       .memread (memread),   // 内存读使能
       .memtoreg(memtoreg),  // 写回寄存器的数据选择
       .aluctrl (aluctrl),   // ALU 控制信号
@@ -232,31 +264,6 @@ module core_top (
       .ZERO   (zero),
       .Y      (alu_out)
   );
-
-endmodule
-
-// 你需要例化的子模块代码可以跟在这后面,或者将子模块文件放在同文件夹下
-
-module data_path (
-    input  wire        clk,
-    input  wire        rst_n,
-    input  wire [31:0] imm,
-    input  wire        branch,
-    input  wire        zero,
-    output reg  [31:0] pc,
-    output wire [31:0] instr
-);
-
-  // 初始PC值
-  // initial pc = 0; // oj 的 Answer 是 xxxxxxxx
-
-  always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) pc <= 32'h0;
-    else if (branch && zero) pc <= pc + imm;  // 分支跳转
-    else pc <= pc + 4;  // 顺序执行
-    // $display("Time=%0t | branch=%b | zero=%b | pc=%h | imm=%h", $time, branch, zero, pc, imm);
-  end
-
 endmodule
 module data_ram (
     input         clk,
@@ -336,7 +343,7 @@ module imm_gen (
   wire [6:0] opcode = instr[6:0];
   wire sgn = instr[31];
 
-  reg [31:0] im; // always 块中无法赋值
+  reg [31:0] im;  // always 块中无法赋值
 
   always @(*) begin
     case (opcode)
@@ -360,9 +367,9 @@ module imm_gen (
       7'b1100011: begin
         //  op[31]  op[30:25]  op[11:8]  op[ 7]
         // imm[12] imm[10: 5] imm[ 4:1] imm[11]
-        im = {{(19+1){sgn}}, instr[7], instr[30:25], instr[11:8], 1'b0};
+        im = {{(19 + 1) {sgn}}, instr[7], instr[30:25], instr[11:8], 1'b0};
       end
-      // U-type
+      // U-type lui, rd = imm << 12
       7'b0010111: begin
         //  op[31:12]
         // imm[31:12]
@@ -373,7 +380,7 @@ module imm_gen (
         //  op[      31        :       12      ]
         //  op[31]  op[30:21]  op[20]  op[19:12]
         // imm[20] imm[10: 1] imm[11] imm[19:12]
-        im = {{(12+1){sgn}}, instr[30:21], instr[20], instr[19:12], 1'b0};
+        im = {{(12 + 1) {sgn}}, instr[30:21], instr[20], instr[19:12], 1'b0};
       end
       default: begin
         im = 32'b0;
@@ -382,23 +389,24 @@ module imm_gen (
   end
   assign imm = im;
 endmodule
-module pc_rom(
+module pc_rom (
     input  wire [31:0] A,
     output wire [31:0] RD
 );
 
-// 请在这里补充你的指令存储器代码
-// reg [31:0] mem [0:1041];
-reg[31:0] cpu_instr_rom[2047:0];
+  // 请在这里补充你的指令存储器代码
+  // reg [31:0] mem [0:1041];
+  reg [31:0] cpu_instr_rom[8191:0];
 
-// initial begin
+  initial begin
     // $readmemb("code.dat", mem); // testbench 单测
     // $readmemb("../pc_rom_test/code.dat", mem);
     // $readmemb("../cpu_core_test/code_b.dat", mem); // 本地测试
     // $readmemb("code_b.dat", mem); // 希冀平台
-// end
+    // $readmemb("inst.txt", cpu_instr_rom);
+  end
 
-assign RD = cpu_instr_rom[A >> 2];
+  assign RD = cpu_instr_rom[A>>2];
 
 endmodule
 module regfile (
@@ -431,7 +439,7 @@ module regfile (
   // 在写使能信号 WE 为 1 时，WD3(32bit) 的数据将在时钟上升沿写入 A3(5bit)对应的寄存器
   always @(posedge clk) begin
     if (WE) begin
-      // $display("Writing to x%d: %h", A3, WD3);
+      $display("Writing to x%d: %h", A3, WD3);
       rf[A3] <= WD3;
     end
     // $display("x11 = %h | x13 = %h", regfile[11], regfile[13]);

@@ -78,7 +78,7 @@ initial begin
 end
 
 initial begin//超时强制结束
-    #300000;
+    #4000;
     $display("*Sim tool:TEST Timeout, Err");
     $display("*Sim tool:Sim cycle = %d", sim_cycle_cnt);
     $stop;

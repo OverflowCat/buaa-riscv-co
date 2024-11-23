@@ -48,8 +48,11 @@ module data_path (
   // PC 更新逻辑
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) pc <= 32'h0;
-    else if (branch && zero) pc <= pc + imm;  // 分支跳转
+    else if (branch && zero) pc <= pc + 4 + imm;  // 分支跳转
     else pc <= pc + 4;  // 顺序执行
+    // $display("pc = %h, instr = %h", pc, instr);
+    // $display("branch = %b, zero = %b", branch, zero);
+    // $display("alu_a = %h, alu_b = %h, alu_out = %h", alu_a, alu_b, alu_out);
   end
 
   assign alu_a = reg_rdata1;
@@ -60,16 +63,16 @@ module data_path (
 
   assign reg_wdata = memtoreg ? mem_rdata : alu_out;
 
-  wire [31:0] cpu_instr_rom [2047:0];
+//   wire [31:0] cpu_instr_rom [2047:0];
 
   wire [1:0] LOAD_SIZE;
-  wire U;
+  wire U_EXT;
 
   // 指令存储器例化
   pc_rom u_instr_rom (
+    //   .cpu_instr_rom(cpu_instr_rom),
       .A (pc),
-      .RD(instr),
-      .cpu_instr_rom(cpu_instr_rom)
+      .RD(instr)
   );
 
   // 控制单元例化
@@ -110,7 +113,7 @@ module data_path (
       .A  (mem_addr),
       .WD (mem_wdata),
       .LOAD_SIZE(LOAD_SIZE),
-      .U(U),
+      .U_EXT(U_EXT),
       .RD (mem_rdata)
   );
 

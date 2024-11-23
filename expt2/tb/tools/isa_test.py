@@ -11,7 +11,7 @@ def 找到所有bin文件(path):
             找到的文件 = os.path.join(主目录, 文件的名称)
             if 找到的文件.endswith('.bin'):
                 找到的文件列表.append(找到的文件)
-
+    print(找到的文件列表)
     return 找到的文件列表
 
 def bin文件转换(输入文件, 输出文件, 数据位宽):
@@ -57,12 +57,13 @@ def 编译并仿真():
     编译命令+=r'-g2005-sv '#语法
     编译命令+=r'-o tb '#输出文件
     编译命令+=r'-Y .sv '#检索sv文件
-    编译命令+=r'-y ../rtl_us/ '#文件夹路径
-    编译命令+=r'-I ../rtl_us/ '#头文件路径
+    编译命令+=r'-y ../ '#文件夹路径
+    编译命令+=r'-I ../ '#头文件路径
     编译命令+=r'-D HDL_SIM '
     if sys.argv[1] == 'all_isa':
         编译命令+=r'-D ISA_TEST '
     编译命令+=r'tb_cpu_core.sv '#仿真文件
+    print("编译命令为", 编译命令)
     编译进程 = os.popen(str(编译命令))
     if sys.argv[1] != 'all_isa':
         print(编译进程.read())

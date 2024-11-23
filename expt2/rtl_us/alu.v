@@ -27,6 +27,7 @@ module alu (
   end
 
   always @(*) begin
+    // $display("A = %h, B = %h", A, B);
     case (ALUCtrl)
       ALU_AND: out = A & B;  // AND
       ALU_OR: out = A | B;  // OR

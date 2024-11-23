@@ -5,7 +5,7 @@ module data_ram (
     input  [31:0] A,          // 地址
     input  [ 1:0] LOAD_SIZE,  // 读取数据类型
     // lw: 00, lh: 01, lb: 10
-    input         U,          // U extend?
+    input         U_EXT,      // U extend?
     input  [31:0] WD,         // 写入数据
     output [31:0] RD          // 读取数据
 );
@@ -64,11 +64,11 @@ module data_ram (
       out = {mem[A+3], mem[A+2], mem[A+1], mem[A]};
       case (LOAD_SIZE)
         2'b01: begin
-          extend_bit = U ? 1'b0 : mem[A+1][7];
+          extend_bit = U_EXT ? 1'b0 : mem[A+1][7];
           out = {{24{extend_bit}}, out[7:0]};
         end
         2'b10: begin
-          extend_bit = U ? 1'b0 : mem[A][7];
+          extend_bit = U_EXT ? 1'b0 : mem[A][7];
           out = {{16{extend_bit}}, out[15:0]};
         end
       endcase

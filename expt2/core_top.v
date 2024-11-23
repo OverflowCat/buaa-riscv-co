@@ -130,14 +130,14 @@ endmodule
 
 // File: instr_rom.v
 module pc_rom(
+    // wire [31:0] cpu_instr_rom [2047:0],
     input  wire [31:0] A,
-    output wire [31:0] RD,
-    wire [31:0] cpu_instr_rom [2047:0]
+    output wire [31:0] RD
 );
 
 // 请在这里补充你的指令存储器代码
 // reg [31:0] cpu_instr_rom [0:1041];
-// reg[32-1:0] cpu_instr_rom[2047:0];
+reg[32-1:0] cpu_instr_rom[2047:0];
 
 // initial begin
     // $readmemb("code.dat", cpu_instr_rom); // testbench 单测
@@ -181,6 +181,7 @@ module alu (
   end
 
   always @(*) begin
+    // $display("A = %h, B = %h", A, B);
     case (ALUCtrl)
       ALU_AND: out = A & B;  // AND
       ALU_OR: out = A | B;  // OR
@@ -260,7 +261,7 @@ module data_ram (
     input  [31:0] A,          // 地址
     input  [ 1:0] LOAD_SIZE,  // 读取数据类型
     // lw: 00, lh: 01, lb: 10
-    input         U,          // U extend?
+    input         U_EXT,      // U extend?
     input  [31:0] WD,         // 写入数据
     output [31:0] RD          // 读取数据
 );
@@ -319,11 +320,11 @@ module data_ram (
       out = {mem[A+3], mem[A+2], mem[A+1], mem[A]};
       case (LOAD_SIZE)
         2'b01: begin
-          extend_bit = U ? 1'b0 : mem[A+1][7];
+          extend_bit = U_EXT ? 1'b0 : mem[A+1][7];
           out = {{24{extend_bit}}, out[7:0]};
         end
         2'b10: begin
-          extend_bit = U ? 1'b0 : mem[A][7];
+          extend_bit = U_EXT ? 1'b0 : mem[A][7];
           out = {{16{extend_bit}}, out[15:0]};
         end
       endcase
@@ -448,8 +449,11 @@ module data_path (
   // PC 更新逻辑
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) pc <= 32'h0;
-    else if (branch && zero) pc <= pc + imm;  // 分支跳转
+    else if (branch && zero) pc <= pc + 4 + imm;  // 分支跳转
     else pc <= pc + 4;  // 顺序执行
+    // $display("pc = %h, instr = %h", pc, instr);
+    // $display("branch = %b, zero = %b", branch, zero);
+    // $display("alu_a = %h, alu_b = %h, alu_out = %h", alu_a, alu_b, alu_out);
   end
 
   assign alu_a = reg_rdata1;
@@ -460,16 +464,16 @@ module data_path (
 
   assign reg_wdata = memtoreg ? mem_rdata : alu_out;
 
-  wire [31:0] cpu_instr_rom [2047:0];
+//   wire [31:0] cpu_instr_rom [2047:0];
 
   wire [1:0] LOAD_SIZE;
-  wire U;
+  wire U_EXT;
 
   // 指令存储器例化
   pc_rom u_instr_rom (
+    //   .cpu_instr_rom(cpu_instr_rom),
       .A (pc),
-      .RD(instr),
-      .cpu_instr_rom(cpu_instr_rom)
+      .RD(instr)
   );
 
   // 控制单元例化
@@ -510,7 +514,7 @@ module data_path (
       .A  (mem_addr),
       .WD (mem_wdata),
       .LOAD_SIZE(LOAD_SIZE),
-      .U(U),
+      .U_EXT(U_EXT),
       .RD (mem_rdata)
   );
 

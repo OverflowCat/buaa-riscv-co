@@ -1,12 +1,12 @@
 module pc_rom(
+    // wire [31:0] cpu_instr_rom [2047:0],
     input  wire [31:0] A,
-    output wire [31:0] RD,
-    wire [31:0] cpu_instr_rom [2047:0]
+    output wire [31:0] RD
 );
 
 // 请在这里补充你的指令存储器代码
 // reg [31:0] cpu_instr_rom [0:1041];
-// reg[32-1:0] cpu_instr_rom[2047:0];
+reg[32-1:0] cpu_instr_rom[2047:0];
 
 // initial begin
     // $readmemb("code.dat", cpu_instr_rom); // testbench 单测
